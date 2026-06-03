@@ -14,32 +14,6 @@ body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-i
 .btn:active{background:#0062cc}
 .tip{text-align:center;font-size:13px;color:#888;margin-top:8px;margin-bottom:12px}
 
-/* 热门推荐（使用原每日更新样式） */
-.hot{margin-top:16px}
-.hot-header{
-    display:flex;justify-content:space-between;align-items:center;
-    margin-bottom:8px;padding-left:4px;
-}
-.hot-title{font-size:14px;color:#ff7b00;font-weight:bold;}
-.hot-date{font-size:12px;color:#888;}
-
-.hot-scroll{
-  max-height:120px; overflow-y:auto; padding-right:4px;
-}
-.hot-item{
-    display:flex;justify-content:space-between;align-items:center;
-    background:#fff7e6;padding:8px 10px;border-radius:10px;margin-bottom:6px;gap:6px
-}
-.hot-name{font-size:13px;color:#333;flex:1}
-.hot-btns{display:flex;gap:4px}
-.hot-go{
-    font-size:12px;padding:4px 8px;border-radius:6px;
-    color:#fff;text-decoration:none;white-space:nowrap
-}
-.baidu{background:#4292e6}
-.quark{background:#1cb0ff}
-.xunlei{background:#f60}
-
 .result{
   margin-top:10px;
   display:none;
@@ -74,28 +48,15 @@ body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-i
 
   <div class="tip">点击蓝色字体跳转链接</div>
   <div class="result" id="result"></div>
-
-  <!-- 热门推荐（原每日更新样式） -->
-  <div class="hot">
-    <div class="hot-header">
-      <div class="hot-title">🔥 热门推荐</div>
-    </div>
-    <div class="hot-scroll" id="hotList"></div>
-  </div>
 </div>
 
 <script>
-// ==============================================================
-//          👇👇👇 【这里是 公开资源 / 热门推荐】👇👇👇
+//公开资源
 const ALL_RESOURCES = `
 【纪录片】阿波罗11号（2019）BD1080P.中英双字 https://pan.baidu.com/s/1kt3OCUtmeLMLiDlztuqK2w?pwd=mumu https://pan.xunlei.com/s/VOq0KJnyOBKsCZjWP3I3qKlWA1?pwd=z36f#
 【美剧】亢奋 第三季（首播01集） https://pan.baidu.com/s/1wDUECPb9ybxlGpQgKGWqLQ?pwd=mumu https://pan.quark.cn/s/2f098bee5901 https://pan.xunlei.com/s/VOq3hApoEt4dCO4Mav6mKkeEA1?pwd=fack
 `;
-//          👆👆👆 【公开资源 / 热门推荐 结束】👆👆👆
-// ==============================================================
-
-// ==============================================================
-//          👇👇👇 【这里是 私密资源】👇👇👇
+//私密资源
 const SECRET_RESOURCES = `
 【美剧】可以开干.DTF圣路易日记（2026）1080P.中英双字.全7集
 https://pan.baidu.com/s/11RZ7dKNn1waECAdNEDMmSA?pwd=mumu
@@ -106,16 +67,9 @@ https://pan.baidu.com/s/1mOfXW8qtRwn9Z-IK3HkPrw?pwd=mumu
 逐玉（2026）全4K
 https://pan.xunlei.com/s/VOq0qiKDFNYMKlwilQJaHWh7A1?pwd=bucj#
 `;
-//          👆👆👆 【私密资源 结束】👆👆👆
-// ==============================================================
+//失效反馈邮箱
+const YOUR_EMAIL = "你的邮箱@qq.com";
 
-// ==========================================
-//  ✅ 接收通知的邮箱
-// ==========================================
-const YOUR_EMAIL = "你的邮箱@qq.com";  
-
-
-// ===================== 以下代码完全不用动 ======================
 let publicList = [];
 let secretList = [];
 
@@ -146,27 +100,6 @@ function highlightName(s){
 
 parsePublic(ALL_RESOURCES);
 parseSecret(SECRET_RESOURCES);
-
-// 加载热门推荐
-function loadHotList(){
-  let h="";
-  ALL_RESOURCES.trim().split("\n").filter(l=>l.trim()).forEach(line=>{
-    const {name,urls}=parseLine(line);
-    let btns="";
-    urls.forEach(u=>{
-      if(u.includes("baidu"))btns+=`<span class="hot-go baidu">百度</span>`;
-      if(u.includes("quark"))btns+=`<span class="hot-go quark">夸克</span>`;
-      if(u.includes("xunlei"))btns+=`<span class="hot-go xunlei">迅雷</span>`;
-    });
-    h+=`<div class="hot-item" onclick="goSearch('${name}')">
-      <span class="hot-name">${highlightName(name)}</span>
-      <div class="hot-btns">${btns}</div>
-    </div>`;
-  });
-  document.getElementById("hotList").innerHTML=h;
-}
-
-loadHotList();
 
 function search(){
   const key=document.getElementById("key").value.trim();
@@ -203,11 +136,6 @@ function copy(url,btn){
     btn.innerText="已复制";btn.classList.add("copied");
     setTimeout(()=>{btn.innerText="复制";btn.classList.remove("copied");},1500);
   });
-}
-
-function goSearch(w){
-  document.getElementById("key").value=w;
-  search();
 }
 
 window.onload=()=>document.getElementById("key").focus();
