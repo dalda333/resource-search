@@ -32,9 +32,11 @@ body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-i
 .item a{color:#007aff;text-decoration:none;flex:1}
 .copy{background:#34c759;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
 .copied{background:#007aff}
-.broken{background:#ff3b30;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px}
 .empty{text-align:center;padding:20px;color:#999}
 .tag{padding:4px 6px; border-radius:6px; font-size:11px; color:#fff; white-space:nowrap;}
+.baidu{background:#4292e6}
+.xunlei{background:#f60}
+.quark{background:#1cb0ff}
 .other{background:#999}
 .highlight{color:#ff3b30;font-weight:bold;}
 </style>
@@ -51,38 +53,26 @@ body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-i
 </div>
 
 <script>
-//公开资源
-const ALL_RESOURCES = `
-`;
-//私密资源
+// 私密资源
 const SECRET_RESOURCES = `
 【美剧】可以开干.DTF圣路易日记（2026）1080P.中英双字.全7集
 https://pan.baidu.com/s/11RZ7dKNn1waECAdNEDMmSA?pwd=mumu
 【美剧】可以开干.DTF圣路易日记（2026）1080P.中英双字.全7集
 https://pan.xunlei.com/s/VOq3lltPgffTT7249w1pCP5wA1?pwd=8ea8#
+【纪录片】文明：兴与衰（2026）1080P.全4集
+https://pan.baidu.com/s/1o8xQmGQK8yTJfpim0QAmVw?pwd=mumu
+【纪录片】文明：兴与衰（2026）1080P.全4集
+https://pan.quark.cn/s/c54314746a01
 逐玉（2026）全4K
 https://pan.baidu.com/s/1mOfXW8qtRwn9Z-IK3HkPrw?pwd=mumu
 逐玉（2026）全4K
 https://pan.xunlei.com/s/VOq0qiKDFNYMKlwilQJaHWh7A1?pwd=bucj#
 `;
-//失效反馈邮箱
+
 const YOUR_EMAIL = "你的邮箱@qq.com";
 
-let publicList = [];
 let secretList = [];
 
-function parseLine(line) {
-  const parts = line.split(/\s+/).filter(i=>i);
-  const urls = parts.filter(p=>p.startsWith("http"));
-  const name = parts.filter(p=>!p.startsWith("http")).join(" ");
-  return {name,urls};
-}
-function parsePublic(text){
-  text.trim().split("\n").filter(l=>l.trim()).forEach(line=>{
-    const {name,urls}=parseLine(line);
-    urls.forEach(u=>publicList.push({name,url:u}));
-  });
-}
 function parseSecret(text){
   const lines=text.trim().split("\n").map(l=>l.trim()).filter(l=>l);
   let cur="";
@@ -92,41 +82,45 @@ function parseSecret(text){
     }else{cur=line;}
   });
 }
+
 function highlightName(s){
   return s.replace(/（[^）]*?(集|更至|首播|全)[^）]*）/g,m=>`<span class="highlight">${m}</span>`);
 }
 
-parsePublic(ALL_RESOURCES);
 parseSecret(SECRET_RESOURCES);
 
 function search(){
   const key=document.getElementById("key").value.trim();
   const res=document.getElementById("result");
   if(!key){alert("请输入内容");return;}
-  const list=[...publicList,...secretList].filter(i=>i.name.includes(key));
+  const list=[...secretList].filter(i=>i.name.includes(key));
   if(list.length===0){res.innerHTML='<div class="empty">未找到资源</div>';res.style.display="block";return;}
+  
   let h="";
   list.forEach(i=>{
-    let tag="链接",cls="other";
-    if(i.url.includes("baidu")){tag="百度";cls="baidu";}
-    if(i.url.includes("quark")){tag="夸克";cls="quark";}
-    if(i.url.includes("xunlei")){tag="迅雷";cls="xunlei";}
+    let tag = "链接";
+    let cls = "other";
+
+    if(i.url.includes("baidu")){
+      tag = "百度";
+      cls = "baidu";
+    }
+    if(i.url.includes("xunlei")){
+      tag = "迅雷";
+      cls = "xunlei";
+    }
+    if(i.url.includes("quark")){
+      tag = "夸克";
+      cls = "quark";
+    }
+
     h+=`<div class="item">
       <a href="${i.url}" target="_blank">${highlightName(i.name)}</a>
       <div class="tag ${cls}">${tag}</div>
       <button class="copy" onclick="copy('${i.url}',this)">复制</button>
-      <button class="broken" onclick="report('${encodeURIComponent(i.name)}','${encodeURIComponent(i.url)}')">失效</button>
     </div>`;
   });
   res.innerHTML=h;res.style.display="block";
-}
-
-function report(name,url){
-  name=decodeURIComponent(name);
-  url=decodeURIComponent(url);
-  const content=`📛资源失效\n名称：${name}\n链接：${url}`;
-  window.open(`mailto:${YOUR_EMAIL}?subject=【资源失效】${name}&body=${encodeURIComponent(content)}`);
-  alert("✅ 反馈成功！\n通知已发送至管理员邮箱");
 }
 
 function copy(url,btn){
