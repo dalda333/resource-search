@@ -6,54 +6,41 @@
 <title>资源搜索</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-items:center;height:100vh}
-.popup{background:#fff;border-radius:20px;width:100%;max-width:420px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.1);max-height:90vh;overflow:hidden}
+body{background:#f2f4f7;padding:20px;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.popup{background:#fff;border-radius:20px;width:100%;max-width:420px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,0.1);max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
 .title{text-align:center;font-size:24px;font-weight:bold;margin-bottom:20px}
-.input{width:100%;padding:16px;border:1px solid #e5e7eb;border-radius:14px;font-size:16px;margin-bottom:12px;outline:0;background:#f9fafb}
-.btn{width:100%;padding:16px;background:#007aff;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:500}
+.input{width:100%;padding:16px;border:1px solid #e5e7eb;border-radius:14px;font-size:16px;margin-bottom:12px;outline:none;background:#f9fafb}
+.btn{width:100%;padding:16px;background:#007aff;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:500;cursor:pointer}
 .btn:active{background:#0062cc}
 .tip{text-align:center;font-size:13px;color:#888;margin-top:8px;margin-bottom:12px}
 
-.result{
-  margin-top:10px;
-  display:none;
-  max-height:380px;
-  overflow-y:auto;
-  padding-right:4px;
-}
-.item{
-  padding:14px;
-  border-bottom:1px solid #f0f0f0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px
-}
+.result{margin-top:10px;display:none;flex:1;overflow-y:auto;padding-right:4px}
+.item{padding:14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px}
 .item a{color:#007aff;text-decoration:none;flex:1}
-.copy{background:#34c759;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+.copy{background:#34c759;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px}
 .copied{background:#007aff}
 .empty{text-align:center;padding:20px;color:#999}
-.tag{padding:4px 6px; border-radius:6px; font-size:11px; color:#fff; white-space:nowrap;}
+.tag{padding:4px 6px;border-radius:6px;font-size:11px;color:#fff;white-space:nowrap}
 .baidu{background:#4292e6}
 .xunlei{background:#f60}
 .quark{background:#1cb0ff}
 .other{background:#999}
-.highlight{color:#ff3b30;font-weight:bold;}
+.highlight{color:#ff3b30;font-weight:bold}
+.key-match{background:#fff200;color:#000;padding:0 2px}
 </style>
 </head>
 
 <body>
 <div class="popup">
   <div class="title">🔍 资源搜索</div>
-  <input type="text" class="input" id="key" placeholder="点这里输入搜索内容" onkeydown="if(event.key==='Enter')search()">
+  <input class="input" id="key" placeholder="输入关键词模糊搜索" onkeydown="if(event.key==='Enter')search()">
   <button class="btn" onclick="search()">立即搜索</button>
-
-  <div class="tip">点击蓝色字体跳转链接</div>
+  <div class="tip">点击蓝色文字跳转链接</div>
   <div class="result" id="result"></div>
 </div>
 
 <script>
-// 私密资源
+// 你的资源库，自行增删
 const SECRET_RESOURCES = `
 【美剧】可以开干.DTF圣路易日记（2026）1080P.中英双字.全7集
 https://pan.baidu.com/s/11RZ7dKNn1waECAdNEDMmSA?pwd=mumu
@@ -63,16 +50,18 @@ https://pan.xunlei.com/s/VOq3lltPgffTT7249w1pCP5wA1?pwd=8ea8#
 https://pan.baidu.com/s/1o8xQmGQK8yTJfpim0QAmVw?pwd=mumu
 【纪录片】文明：兴与衰（2026）1080P.全4集
 https://pan.quark.cn/s/c54314746a01
+【纪录片】船政学堂（2014）BD1080P.国语中字.全6集 
+https://pan.baidu.com/s/1acYsN0vFhpts_gK_IjLhZQ?pwd=mumu
+【纪录片】船政学堂（2014）BD1080P.国语中字.全6集 https://pan.quark.cn/s/7e0e6805d26e
 逐玉（2026）全4K
 https://pan.baidu.com/s/1mOfXW8qtRwn9Z-IK3HkPrw?pwd=mumu
 逐玉（2026）全4K
 https://pan.xunlei.com/s/VOq0qiKDFNYMKlwilQJaHWh7A1?pwd=bucj#
 `;
 
-const YOUR_EMAIL = "你的邮箱@qq.com";
-
 let secretList = [];
 
+// 解析资源文本
 function parseSecret(text){
   const lines=text.trim().split("\n").map(l=>l.trim()).filter(l=>l);
   let cur="";
@@ -83,50 +72,65 @@ function parseSecret(text){
   });
 }
 
-function highlightName(s){
-  return s.replace(/（[^）]*?(集|更至|首播|全)[^）]*）/g,m=>`<span class="highlight">${m}</span>`);
-}
-
 parseSecret(SECRET_RESOURCES);
 
-function search(){
-  const key=document.getElementById("key").value.trim();
-  const res=document.getElementById("result");
-  if(!key){alert("请输入内容");return;}
-  const list=[...secretList].filter(i=>i.name.includes(key));
-  if(list.length===0){res.innerHTML='<div class="empty">未找到资源</div>';res.style.display="block";return;}
-  
-  let h="";
-  list.forEach(i=>{
-    let tag = "链接";
-    let cls = "other";
-
-    if(i.url.includes("baidu")){
-      tag = "百度";
-      cls = "baidu";
-    }
-    if(i.url.includes("xunlei")){
-      tag = "迅雷";
-      cls = "xunlei";
-    }
-    if(i.url.includes("quark")){
-      tag = "夸克";
-      cls = "quark";
-    }
-
-    h+=`<div class="item">
-      <a href="${i.url}" target="_blank">${highlightName(i.name)}</a>
-      <div class="tag ${cls}">${tag}</div>
-      <button class="copy" onclick="copy('${i.url}',this)">复制</button>
-    </div>`;
+// 模糊匹配+关键词标黄核心函数
+function fuzzyMatch(list, keyword){
+  const kw = keyword.toLowerCase();
+  return list.filter(item => {
+    const nameLow = item.name.toLowerCase();
+    // 只要包含片段就匹配，纯模糊
+    return nameLow.includes(kw);
+  }).map(item=>{
+    // 匹配文字标黄高亮
+    const reg = new RegExp(`(${keyword})`,"gi");
+    const showName = item.name.replace(reg,'<span class="key-match">$1</span>');
+    return {...item, showName};
   });
-  res.innerHTML=h;res.style.display="block";
 }
 
-function copy(url,btn){
+function search(){
+  const inputVal=document.getElementById("key").value.trim();
+  const resBox=document.getElementById("result");
+  if(!inputVal){
+    alert("请输入搜索关键词");
+    return;
+  }
+  // 执行模糊搜索
+  const matchList = fuzzyMatch(secretList, inputVal);
+  if(matchList.length===0){
+    resBox.innerHTML='<div class="empty">未找到匹配资源</div>';
+    resBox.style.display="block";
+    return;
+  }
+  let htmlStr="";
+  matchList.forEach(i=>{
+    let tagText="链接", tagClass="other";
+    if(i.url.includes("baidu")){tagText="百度";tagClass="baidu"}
+    if(i.url.includes("xunlei")){tagText="迅雷";tagClass="xunlei"}
+    if(i.url.includes("quark")){tagText="夸克";tagClass="quark"}
+
+    htmlStr += `
+    <div class="item">
+      <a href="${i.url}" target="_blank">${i.showName}</a>
+      <div class="tag ${tagClass}">${tagText}</div>
+      <button class="copy" onclick="copyLink('${i.url}',this)">复制</button>
+    </div>
+    `;
+  });
+  resBox.innerHTML=htmlStr;
+  resBox.style.display="block";
+}
+
+// 复制链接
+function copyLink(url, btn){
   navigator.clipboard.writeText(url).then(()=>{
-    btn.innerText="已复制";btn.classList.add("copied");
-    setTimeout(()=>{btn.innerText="复制";btn.classList.remove("copied");},1500);
+    btn.innerText="已复制";
+    btn.classList.add("copied");
+    setTimeout(()=>{
+      btn.innerText="复制";
+      btn.classList.remove("copied");
+    },1500);
   });
 }
 
